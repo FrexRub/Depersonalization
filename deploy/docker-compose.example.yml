@@ -1,0 +1,50 @@
+services:
+  privacy-filter:
+    build:
+      context: ..
+      args:
+        TORCH_VERSION: "2.7.1"
+    image: privacy-filter-api:1.0.0
+    container_name: privacy-filter
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      APP_ENV: production
+      API_TOKEN_FILE: /run/secrets/privacy_filter_token
+      OPF_DEVICE: cpu
+      OPF_MODEL_PATH: /models/privacy-filter
+      HF_MODEL_REPO: openai/privacy-filter
+      HF_MODEL_REVISION: 57b51f4cffdc93db3fa5ed7065e362ca88e8e7e7
+      INFERENCE_CONCURRENCY: "1"
+      INFERENCE_QUEUE_CAPACITY: "2"
+      INFERENCE_QUEUE_WAIT_SECONDS: "2"
+      MAX_TEXT_CHARS: "250000"
+      MAX_REQUEST_BYTES: "1000000"
+      DOCS_ENABLED: "false"
+    volumes:
+      - privacy_filter_models:/models
+    secrets:
+      - privacy_filter_token
+    networks:
+      - automation
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 5m
+
+networks:
+  automation:
+    external: true
+
+volumes:
+  privacy_filter_models:
+
+secrets:
+  privacy_filter_token:
+    file: ../secrets/privacy_filter_token
+

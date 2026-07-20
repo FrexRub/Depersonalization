@@ -1,0 +1,74 @@
+{
+  "name": "Privacy Filter API example",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "synthetic-text",
+              "name": "resume_text",
+              "type": "string",
+              "value": "Тестовый кандидат, телефон +7 900 000-00-00"
+            }
+          ]
+        }
+      },
+      "id": "synthetic-input",
+      "name": "Synthetic input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://privacy-filter:8000/v1/redact",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\"text\": {{ JSON.stringify($json.resume_text) }}, \"mode\": \"typed\", \"policy\": \"ru_resume\"}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "privacy-filter",
+      "name": "Privacy Filter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node": "Synthetic input", "type": "main", "index": 0}]]
+    },
+    "Synthetic input": {
+      "main": [[{"node": "Privacy Filter", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "versionId": "00000000-0000-4000-8000-000000000001",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
+
